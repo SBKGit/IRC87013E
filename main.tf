@@ -21,16 +21,18 @@ resource "aws_eip" "myeip"{
   }
 }
 
-resource "aws_default_vpc" "default"{
-  tags = {
-    Name = "Default VPC"
+# VPC
+resource "aws_vpc" "terra_vpc" {
+  cidr_block       = "${var.vpc_cidr}"
+  tags =  {
+    Name = "Terraform_VPC"
   }
 }
 
 resource "aws_security_group" "allow_ports" {
   name          = "alb"
   description   = "Allow inbound traffic"
-  vpc_id        = "${aws_default_vpc.default.id}"
+  vpc_id        = "${aws_vpc.terra_vpc.id}"
   
   ingress {
     description = "http from VPC"
@@ -69,7 +71,7 @@ resource "aws_security_group" "allow_ports" {
 }
 
 data "aws_subnet_ids" "subnet" {
-  vpc_id = "${aws_default_vpc.default.id}"
+  vpc_id = "${aws_vpc.terra_vpc.id}"
 
 }
 
@@ -86,7 +88,7 @@ resource "aws_lb_target_group" "my-target-group" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = "${aws_default_vpc.default.id}"
+  vpc_id      = "${aws_vpc.terra_vpc.id}"
 }
 
 resource "aws_lb" "my-aws-alb" {
@@ -121,14 +123,6 @@ resource "aws_alb_target_group_attachment" "ec2_attach" {
   target_id = aws_instance.base[count.index].id
 }
   
-# VPC
-resource "aws_vpc" "terra_vpc" {
-  cidr_block       = "${var.vpc_cidr}"
-  tags =  {
-    Name = "Terraform_VPC"
-  }
-}
-
 # Internet Gateway
 resource "aws_internet_gateway" "terra_igw" {
   vpc_id = "${aws_vpc.terra_vpc.id}"
