@@ -107,7 +107,7 @@ resource "aws_lb" "my-aws-alb" {
   load_balancer_type  = "application"
 }
 
-resource "aws_lb_listner" "test-lb-listner" {
+resource "aws_lb_listener" "test-lb-listener" {
   load_balancer_arn = aws_lb.my-aws-lb.arn
        port     = 80
        protocol = "HTTP"
