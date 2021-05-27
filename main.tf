@@ -13,7 +13,7 @@ resource "aws_instance" "base"{
 EOF
 
   tags ={
-    Name = "sbktest{count.index}"
+    Name = "sbktest${count.index}"
   }
 }
 
