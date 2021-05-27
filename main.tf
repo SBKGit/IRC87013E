@@ -6,12 +6,10 @@ resource "aws_instance" "base"{
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
   user_data              = base64encode(data.template_file.userdata.rendered)
 
-
   tags ={
     Name = "sbktest{count.index}"
   }
 }
-
 
 resource "aws_eip" "myeip"{
   count =length(aws_instance.base)
@@ -107,8 +105,8 @@ resource "aws_lb" "my-aws-alb" {
   load_balancer_type  = "application"
 }
 
-resource "aws_lb_listener" "test-lb-listener" {
-  load_balancer_arn = aws_lb.my-aws-lb.arn
+resource "aws_lb_listener" "test-alb-listener" {
+  load_balancer_arn = aws_lb.my-aws-alb.arn
        port     = 80
        protocol = "HTTP"
        default_action {
