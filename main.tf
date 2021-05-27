@@ -4,14 +4,14 @@ resource "aws_instance" "base"{
   count                  = 2
   key_name               = "sbktest"
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
-  user_data              = <<-EOF
-             #!/bin/bash
-              yum install httpd -y
-              echo "hey i am $(hostname -f)" > /var/www/html/index.html
-              service httpd start
-              chkconfig httpd on
-EOF
+  user_data              = data.template_file.user_data.rendered
 
+}
+data "template_file" "user_data" {
+  template = file("${path.module}/user-data.sh"
+    "${file("install_httpd.sh")}"
+  
+  
   tags ={
     Name = "sbktest${count.index}"
   }
@@ -23,7 +23,7 @@ resource "aws_eip" "myeip"{
   instance = "${element(aws_instance.base.*.id,count.index)}"
 
   tags = {
-    Name ="eip-yourname${count.index + 1}" 
+    Name ="eip-sbk${count.index + 1}" 
   }
 }
 
@@ -125,4 +125,50 @@ resource "aws_alb_target_group_attachment" "ec2_attach" {
   count = length(aws_instance.base)
   target_group_arn = aws_lb_target_group.my-target-group.arn
   target_id = aws_instance.base[count.index].id
+}
+  
+# VPC
+resource "aws_vpc" "terra_vpc" {
+  cidr_block       = "${var.vpc_cidr}"
+  tags =  {
+    Name = "Terraform_VPC"
+  }
+}
+
+# Internet Gateway
+resource "aws_internet_gateway" "terra_igw" {
+  vpc_id = "${aws_vpc.terra_vpc.id}"
+  tags =  {
+    Name = "main"
+  }
+}
+
+# Subnets : public
+resource "aws_subnet" "public" {
+  count = "${length(var.subnets_cidr)}"
+  vpc_id = "${aws_vpc.terra_vpc.id}"
+  cidr_block = "${element(var.subnets_cidr,count.index)}"
+  availability_zone = "${element(var.azs,count.index)}"
+  tags =  {
+    Name = "Subnet-${count.index+1}"
+  }
+}
+
+# Route table: attach Internet Gateway 
+resource "aws_route_table" "public_rt" {
+  vpc_id = "${aws_vpc.terra_vpc.id}"
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${aws_internet_gateway.terra_igw.id}"
+  }
+  tags =  {
+    Name = "publicRouteTable"
+  }
+}
+
+# Route table association with public subnets
+resource "aws_route_table_association" "a" {
+  count = "${length(var.subnets_cidr)}"
+  subnet_id      = "${element(aws_subnet.public.*.id,count.index)}"
+  route_table_id = "${aws_route_table.public_rt.id}"
 }
