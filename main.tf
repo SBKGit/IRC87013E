@@ -4,7 +4,13 @@ resource "aws_instance" "base"{
   count                  = 2
   key_name               = "sbktest"
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
-  user_data              = base64encode(data.template_file.userdata.rendered)
+  user_data              = <<-EOF
+             #!/bin/bash
+              yum install httpd -y
+              echo "hey i am $(hostname -f)" > /var/www/html/index.html
+              service httpd start
+              chkconfig httpd on
+EOF
 
   tags ={
     Name = "sbktest{count.index}"
