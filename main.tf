@@ -4,7 +4,7 @@ resource "aws_instance" "base"{
   count                  = 2
   key_name               = "sbktest"
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
-  user_data              = data.template_file.user_data.rendered
+  user_data              = base64encode(data.template_file.userdata.rendered)
 
 
   tags ={
