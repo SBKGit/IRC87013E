@@ -8,7 +8,7 @@ resource "aws_instance" "base"{
 
 }
 data "template_file" "user_data" {
-  template = file("${path.templates}/userdata.sh"
+  template = file("${path.templates}/userdata.sh")
 
   tags ={
     Name = "sbktest${count.index}"
