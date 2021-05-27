@@ -1,9 +1,10 @@
 resource "aws_instance" "base"{
-  ami = "put ami here"
-  instance_type = "t2.micro"
-  count = 2
-  key_name = "${aws_key_pair.keypair.key_name}"
+  ami                    = var.ami_version
+  instance_type          = var.instance_type
+  count                  = 2
+  key_name               = "${aws_key_pair.keypair.key_name}"
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
+  user_data              = data.template_file.user_data.rendered
 
 
   tags ={
