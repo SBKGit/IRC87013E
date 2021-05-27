@@ -1,7 +1,5 @@
 variable "region" {
   description = "AWS Region"
-  access_key  = "AKIAY5NLBQSSGZGXF7SA"
-  secret_key  = "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"
   region      = "eu-east-1"
 }  
 
