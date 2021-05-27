@@ -2,7 +2,7 @@ resource "aws_instance" "base"{
   ami                    = var.ami_version
   instance_type          = var.instance_type
   count                  = 2
-  key_name               = "${aws_key_pair.keypair.key_name}"
+  key_name               = "sbktest"
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
   user_data              = data.template_file.user_data.rendered
 
@@ -12,10 +12,6 @@ resource "aws_instance" "base"{
   }
 }
 
-resource "aws_key_pair" "kaypair"{
-  key_name = "sbktest"
- 
-}
 
 resource "aws_eip" "myeip"{
   count =length(aws_instance.base)
