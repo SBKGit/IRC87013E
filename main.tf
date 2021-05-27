@@ -122,7 +122,7 @@ resource "aws_lb_listener" "test-alb-listener" {
 }
 
 resource "aws_alb_target_group_attachment" "ec2_attach" {
-  count     = length(aws_instance.base)
-  target_group_arn = aws_lb_target_group.my-target_group_arn
-  target_id        = aws_instance.base[count.index].id
+  count = length(aws_instance.base)
+  target_group_arn = aws_lb_target_group.my-target-group.arn
+  target_id = aws_instance.base[count.index].id
 }
