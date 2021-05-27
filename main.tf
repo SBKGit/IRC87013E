@@ -82,7 +82,6 @@ resource "aws_lb_target_group" "my-target-group" {
     protocol            = "HTTP"
     timeout             = 5
     healthy_threshold   = 5
-    Unhealthy_threshold = 2
   }
 
   name        = "my-test-tg"
@@ -108,7 +107,7 @@ resource "aws_lb" "my-aws-alb" {
   load_balancer_type  = "application"
 }
 
-resource "aws_lb_listner" "test-alb-listner" {
+resource "aws_alb_listner" "test-alb-listner" {
   load_balancer_arn = aws_lb.my-aws-alb.arn
        port     = 80
        protocol = "HTTP"
