@@ -8,10 +8,8 @@ resource "aws_instance" "base"{
 
 }
 data "template_file" "user_data" {
-  template = file("${path.module}/user-data.sh"
-    "${file("install_httpd.sh")}"
-  
-  
+  template = file("${path.templates}/user-data.sh"
+
   tags ={
     Name = "sbktest${count.index}"
   }
