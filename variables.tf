@@ -26,5 +26,5 @@ variable "subnets_cidr" {
 
 variable "azs" {
 	type = "list"
-	default = ["us-east-2", "us-west-2"]
+	default = ["us-east-1a", "us-east-1b"]
 }
