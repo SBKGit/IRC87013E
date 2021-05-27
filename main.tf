@@ -8,13 +8,13 @@ resource "aws_instance" "base"{
 
 
   tags ={
-    Name = "yourname{count.index}"
+    Name = "sbktest{count.index}"
   }
 }
 
 resource "aws_key_pair" "kaypair"{
-  key_name = "key name here"
-  public_key = "ssh-rsa --insert key here and followed by ec2-user@ip"
+  key_name = "sbktest"
+ 
 }
 
 resource "aws_eip" "myeip"{
