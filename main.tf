@@ -34,7 +34,7 @@ resource "aws_vpc" "terraform-vpc" {
 resource "aws_subnet" "terraform-subnet_1" {
   vpc_id     = "${aws_vpc.terraform-vpc.id}"
   cidr_block = "172.16.10.0/24"
-  availability_zone = var.azs
+  availability_zone = "us-east-1a"
 
   tags = {
     Name = "terraform-subnet_1"
