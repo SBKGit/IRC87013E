@@ -21,11 +21,23 @@ resource "aws_eip" "myeip"{
   }
 }
 
-# VPC
-resource "aws_vpc" "terra_vpc" {
-  cidr_block       = "${var.vpc_cidr}"
-  tags =  {
-    Name = "Terraform_VPC"
+
+## Create VPC ##
+resource "aws_vpc" "terraform-vpc" {
+  cidr_block       = "172.16.0.0/16"
+  enable_dns_hostnames = true
+  tags = {
+    Name = "terraform-demo-vpc"
+  }
+}
+
+resource "aws_subnet" "terraform-subnet_1" {
+  vpc_id     = "${aws_vpc.terraform-vpc.id}"
+  cidr_block = "172.16.10.0/24"
+  availability_zone = "${element(var.azs,count.index)}"
+
+  tags = {
+    Name = "terraform-subnet_1"
   }
 }
 
@@ -70,10 +82,6 @@ resource "aws_security_group" "allow_ports" {
   }
 }
 
-data "aws_subnet_ids" "subnet" {
-  vpc_id = "${aws_vpc.terra_vpc.id}"
-
-}
 
 resource "aws_lb_target_group" "my-target-group" {
   health_check {
@@ -133,8 +141,8 @@ resource "aws_internet_gateway" "terra_igw" {
 
 # # Subnets : public
 resource "aws_subnet" "public" {
-  count = "${length(var.subnets_cidr)}"
-  vpc_id = "${aws_vpc.terra_vpc.id}"
+  count   = "${length(var.subnets_cidr)}"
+  vpc_id  = "${aws_vpc.terraform-vpc.id}"
   cidr_block = "${element(var.subnets_cidr,count.index)}"
   availability_zone = "${element(var.azs,count.index)}"
   tags =  {
@@ -144,7 +152,7 @@ resource "aws_subnet" "public" {
 
 # # Route table: attach Internet Gateway 
 resource "aws_route_table" "public_rt" {
-  vpc_id = "${aws_vpc.terra_vpc.id}"
+  vpc_id = "${aws_vpc.terraform-vpc.id}"
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = "${aws_internet_gateway.terra_igw.id}"
