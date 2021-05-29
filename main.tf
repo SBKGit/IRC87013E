@@ -70,10 +70,10 @@ resource "aws_security_group" "allow_ports" {
   }
 }
 
-# data "aws_subnet_ids" "subnet" {
-#   vpc_id = "${aws_vpc.terra_vpc.id}"
+data "aws_subnet_ids" "subnet" {
+  vpc_id = "${aws_vpc.terra_vpc.id}"
 
-# }
+}
 
 resource "aws_lb_target_group" "my-target-group" {
   health_check {
@@ -98,10 +98,10 @@ resource "aws_lb" "my-aws-alb" {
     "${aws_security_group.allow_ports.id}",
   ]
 
-#   subnets = data.aws_subnet_ids.subnet.ids
-#   tags = {
-#     Name = "test-alb"
-#   }
+  subnets = data.aws_subnet_ids.subnet.ids
+  tags = {
+    Name = "test-alb"
+  }
 
   ip_address_type     = "ipv4"
   load_balancer_type  = "application"
