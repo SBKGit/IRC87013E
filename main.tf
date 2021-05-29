@@ -4,7 +4,7 @@ resource "aws_instance" "base"{
   count                  = var.no-of-instances
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
-  user_data              = "${file('install_httpd.sh')}"
+  user_data              = "${file("install_httpd.sh")}"
 
   tags ={
     Name = "sbktest${count.index}"
