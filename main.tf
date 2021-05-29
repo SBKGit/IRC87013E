@@ -44,7 +44,7 @@ resource "aws_subnet" "terraform-subnet_1" {
 resource "aws_security_group" "allow_ports" {
   name          = "alb"
   description   = "Allow inbound traffic"
-  vpc_id        = "${aws_vpc.terra_vpc.id}"
+  vpc_id        = "${aws_vpc.terraform-vpc.id}"
   
   ingress {
     description = "http from VPC"
@@ -96,7 +96,7 @@ resource "aws_lb_target_group" "my-target-group" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = "${aws_vpc.terra_vpc.id}"
+  vpc_id      = "${aws_vpc.terraform-vpc.id}"
 }
 
 resource "aws_lb" "my-aws-alb" {
@@ -133,7 +133,7 @@ resource "aws_alb_target_group_attachment" "ec2_attach" {
   
 # Internet Gateway
 resource "aws_internet_gateway" "terra_igw" {
-  vpc_id = "${aws_vpc.terra_vpc.id}"
+  vpc_id = "${aws_vpc.terraform-vpc.id}"
   tags =  {
     Name = "main"
   }
