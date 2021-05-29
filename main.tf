@@ -4,7 +4,7 @@ resource "aws_instance" "base"{
   count                  = var.no-of-instances
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.allow_ports.id]
-  user_data              = "${file("install_httpd.sh")}"
+  user_data              = "${file('install_httpd.sh')}"
 
   tags ={
     Name = "sbktest${count.index}"
@@ -34,7 +34,7 @@ resource "aws_vpc" "terraform-vpc" {
 resource "aws_subnet" "terraform-subnet_1" {
   vpc_id     = "${aws_vpc.terraform-vpc.id}"
   cidr_block = "172.16.10.0/24"
-  availability_zone = "${element(var.azs,count.index)}"
+  availability_zone = var.azs
 
   tags = {
     Name = "terraform-subnet_1"
@@ -144,7 +144,7 @@ resource "aws_subnet" "public" {
   count   = "${length(var.subnets_cidr)}"
   vpc_id  = "${aws_vpc.terraform-vpc.id}"
   cidr_block = "${element(var.subnets_cidr,count.index)}"
-  availability_zone = "${element(var.azs,count.index)}"
+  availability_zone = var.azs
   tags =  {
     Name = "Subnet-${count.index+1}"
   }
