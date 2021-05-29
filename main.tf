@@ -72,7 +72,7 @@ resource "aws_security_group" "elb" {
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
+}
 ### Creating ELB
   
 resource "aws_elb" "sbk" {
@@ -93,6 +93,7 @@ resource "aws_elb" "sbk" {
     instance_port = "80"
     instance_protocol = "http"
   }
+}
 
 resource "aws_alb_target_group_attachment" "ec2_attach" {
   count = length(aws_instance.base)
