@@ -41,48 +41,6 @@ resource "aws_subnet" "terraform-subnet_1" {
   }
 }
 
-resource "aws_security_group" "allow_ports" {
-  name          = "alb"
-  description   = "Allow inbound traffic"
-  vpc_id        = "${aws_vpc.terraform-vpc.id}"
-  
-  ingress {
-    description = "http from VPC"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks =["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "tomcat port from VPC"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    ="tcp"
-    cidr_blocks =["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "TLS from VPC"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks =["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks =["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "allow_ports"
-  }
-}
-
-
 resource "aws_lb_target_group" "my-target-group" {
   health_check {
     interval            = 10
@@ -99,31 +57,42 @@ resource "aws_lb_target_group" "my-target-group" {
   vpc_id      = "${aws_vpc.terraform-vpc.id}"
 }
 
-resource "aws_lb" "my-aws-alb" {
-  name      = "test-alb"
-  internal  = false
-  security_groups = [
-    "${aws_security_group.allow_ports.id}",
-  ]
-
-  subnets = data.aws_subnet_ids.subnet.ids
-  tags = {
-    Name = "test-alb"
+## Security Group for ELB
+resource "aws_security_group" "elb" {
+  name = "terraform-sbk-elb"
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ip_address_type     = "ipv4"
-  load_balancer_type  = "application"
-}
-
-resource "aws_lb_listener" "test-alb-listener" {
-  load_balancer_arn = aws_lb.my-aws-alb.arn
-       port     = 80
-       protocol = "HTTP"
-       default_action {
-         target_group_arn = "${aws_lb_target_group.my-target-group.arn}"
-         type             = "forward"
-       }  
-}
+### Creating ELB
+  
+resource "aws_elb" "sbk" {
+  name = "terraform-asg-sbk"
+  security_groups = ["${aws_security_group.elb.id}"]
+  subnets = data.aws_subnet_ids.subnet.ids
+  #availability_zones = ["${data.aws_availability_zones.all.names}"]
+  health_check {
+    healthy_threshold = 10
+    unhealthy_threshold = 10
+    timeout = 3
+    interval = 30
+    target = "HTTP:80/"
+  }
+  listener {
+    lb_port = 80
+    lb_protocol = "http"
+    instance_port = "80"
+    instance_protocol = "http"
+  }
 
 resource "aws_alb_target_group_attachment" "ec2_attach" {
   count = length(aws_instance.base)
