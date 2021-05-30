@@ -27,16 +27,12 @@ variable "azs" {
 	default = ["us-east-1a", "us-east-1b"]
 }
 
-variable "amiid" {
-  default = "ami-04b2519c83e2a7ea5"
-}
-
 variable "instance_type" {
   default = "t2.micro"
 }
 
 variable "no-of-instances" {
-  default = "2"
+  default = "1"
 }
 
 variable "ami_version" {
