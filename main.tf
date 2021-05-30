@@ -74,7 +74,7 @@ resource "aws_security_group" "webservers" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-  }
+  } 
 ingress {
     description = "ssh from VPC"
     from_port   = 22
@@ -102,5 +102,96 @@ resource "aws_instance" "base"{
   user_data              = "${file("install_httpd.sh")}"
   tags ={
     Name = "sbktest${count.index}"
+  }
+}
+
+#target group
+resource "aws_lb_target_group" "my-target-group" {
+  health_check {
+    interval            = 10
+    path                = "/"
+    protocol            = "HTTP"
+    timeout             = 5
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
+  }
+
+  name        = "my-test-tg"
+  port        = 80
+  protocol    = "HTTP"
+  target_type = "instance"
+  vpc_id      = "${aws_vpc.terra_vpc.id}"
+}
+
+resource "aws_elb" "my-aws-elb" {
+  name     = "sbk-test-elb"
+  internal = false
+  security_groups = [
+    "${aws_security_group.webservers.id}",
+  ]
+
+  subnets =  [
+    for num in aws_subnet.public:
+    num.id
+  ]
+  tags = {
+    Name = "sbk-test-alb"
+  }
+
+  # ip_address_type    = "ipv4"
+  # load_balancer_type = "application"
+  health_check {
+    healthy_threshold = 10
+    unhealthy_threshold = 10
+    timeout = 3
+    interval = 30
+    target = "HTTP:80/"
+  }
+  listener {
+    lb_port = 80
+    lb_protocol = "http"
+    instance_port = "80"
+    instance_protocol = "http"
+  }
+}
+
+# resource "aws_lb_listener" "sbk-test-alb-listner" {
+  
+#  load_balancer_arn = aws_lb.my-aws-alb.arn
+#       port                = 80
+#       protocol            = "HTTP"
+#       default_action {
+#         target_group_arn = "${aws_lb_target_group.my-target-group.arn}"
+#         type             = "forward"
+#       }
+# }
+
+# resource "aws_alb_target_group_attachment" "ec2_attach" {
+#   count = length(aws_instance.base)
+#   target_group_arn = aws_lb_target_group.my-target-group.arn
+#   target_id = aws_instance.base[count.index].id
+# }
+
+## Creating Launch Configuration
+resource "aws_launch_configuration" "example" {
+  image_id               = var.ami_version
+  instance_type          = var.instance_type
+  security_groups        = ["${aws_security_group.webservers.id}"]
+  key_name               = var.key_name
+  user_data              = "${file("install_httpd.sh")}"
+}
+
+## Creating AutoScaling Group
+resource "aws_autoscaling_group" "example" {
+  launch_configuration = "${aws_launch_configuration.example.id}"
+  availability_zones = var.availability_zone1
+  min_size = 1
+  max_size = 3
+  load_balancers = ["${aws_elb.my-aws-elb.name}"]
+  health_check_type = "EC2"
+  tag {
+    key = "Name"
+    value = "terraform-asg-example"
+    propagate_at_launch = true
   }
 }
