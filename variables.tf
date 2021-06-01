@@ -32,7 +32,7 @@ variable "instance_type" {
 }
 
 variable "no-of-instances" {
-  default = "1"
+  default = "2"
 }
 
 variable "ami_version" {
@@ -43,4 +43,12 @@ variable "ami_version" {
 
 variable "availability_zone1" {
   default = ["us-east-1a", "us-east-1b"]
+}
+
+variable "min_size" {
+  default = "1"
+}
+
+variable "max_size" {
+  default = "3"
 }
