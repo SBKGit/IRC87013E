@@ -1,5 +1,4 @@
-
-# VPC
+## creating VPC
 resource "aws_vpc" "terra_vpc" {
   cidr_block       = "${var.vpc_cidr}"
   enable_dns_hostnames = true
@@ -8,6 +7,7 @@ resource "aws_vpc" "terra_vpc" {
   }
 }
 
+## creating subnets
  resource "aws_subnet" "subnet1" {
    count = "${length(var.subnets_cidr2)}"
    vpc_id     = "${aws_vpc.terra_vpc.id}"
@@ -20,7 +20,7 @@ resource "aws_vpc" "terra_vpc" {
     }
  }
 
-# Internet Gateway
+##  Internet Gateway
 resource "aws_internet_gateway" "terra_igw" {
   vpc_id = "${aws_vpc.terra_vpc.id}"
   tags =  {
@@ -28,7 +28,7 @@ resource "aws_internet_gateway" "terra_igw" {
   }
 }
 
-# Subnets : public
+##  Subnets : public
 resource "aws_subnet" "public" {
   count = "${length(var.subnets_cidr)}"
   vpc_id = "${aws_vpc.terra_vpc.id}"
@@ -40,7 +40,7 @@ resource "aws_subnet" "public" {
   }
 }
 
-# Route table: attach Internet Gateway 
+##  Route table: attach Internet Gateway 
 resource "aws_route_table" "public_rt" {
   vpc_id = "${aws_vpc.terra_vpc.id}"
   route {
@@ -52,7 +52,7 @@ resource "aws_route_table" "public_rt" {
   }
 }
 
-# Route table association with public subnets
+##  Route table association with public subnets
 resource "aws_route_table_association" "a" {
   count = "${length(var.subnets_cidr)}"
   subnet_id      = "${element(aws_subnet.public.*.id,count.index)}"
@@ -64,6 +64,7 @@ resource "aws_route_table_association" "public-assoc-1" {
   route_table_id = "${aws_route_table.public_rt.id}"
 }
 
+##  creating security groups
 resource "aws_security_group" "webservers" {
   name        = "allow_http"
   description = "Allow http inbound traffic"
@@ -91,6 +92,7 @@ ingress {
   }
 }
 
+## creating instances
 resource "aws_instance" "base"{
   ami                    = var.ami_version
   instance_type          = var.instance_type
@@ -105,7 +107,7 @@ resource "aws_instance" "base"{
   }
 }
 
-#target group
+## creating target group
 resource "aws_lb_target_group" "my-target-group" {
   health_check {
     interval            = 10
@@ -138,8 +140,6 @@ resource "aws_elb" "my-aws-elb" {
     Name = "sbk-test-alb"
   }
 
-  # ip_address_type    = "ipv4"
-  # load_balancer_type = "application"
   health_check {
     healthy_threshold = 10
     unhealthy_threshold = 10
@@ -155,34 +155,14 @@ resource "aws_elb" "my-aws-elb" {
   }
 }
 
-# resource "aws_lb_listener" "sbk-test-alb-listner" {
-  
-#  load_balancer_arn = aws_lb.my-aws-alb.arn
-#       port                = 80
-#       protocol            = "HTTP"
-#       default_action {
-#         target_group_arn = "${aws_lb_target_group.my-target-group.arn}"
-#         type             = "forward"
-#       }
-# }
-
-# resource "aws_alb_target_group_attachment" "ec2_attach" {
-#   count = length(aws_instance.base)
-#   target_group_arn = aws_lb_target_group.my-target-group.arn
-#   target_id = aws_instance.base[count.index].id
-# }
-
- resource "aws_default_subnet" "defaultsub" {
-  availability_zone = "us-east-1b"
-
-  tags = {
-    Name = "Default subnet"
-  }
+## creating Placement Group
+resource "aws_placement_group" "sbk" {
+  name     = "sbk"
+  strategy = "partition"
 }
 
-
 ## Creating Launch Configuration
-resource "aws_launch_configuration" "example" {
+resource "aws_launch_configuration" "sbk" {
   image_id               = var.ami_version
   instance_type          = var.instance_type
   security_groups        = ["${aws_security_group.webservers.id}"]
@@ -191,16 +171,18 @@ resource "aws_launch_configuration" "example" {
 }
 
 ## Creating AutoScaling Group
-resource "aws_autoscaling_group" "example" {
-  launch_configuration = "${aws_launch_configuration.example.id}"
-  availability_zones = var.availability_zone1
-  min_size = 1
-  max_size = 3
-  load_balancers = ["${aws_elb.my-aws-elb.name}"]
-  health_check_type = "EC2"
+resource "aws_autoscaling_group" "sbkasg" {
+  launch_configuration      = "${aws_launch_configuration.sbk.id}"
+  placement_group           = "${aws_placement_group.sbk.id}"
+  vpc_zone_identifier       = [aws_subnet.public[0].id, aws_subnet.public[1].id, aws_subnet.subnet1[0].id,aws_subnet.subnet1[1].id]
+  min_size                  = var.min_size
+  max_size                  = var.max_size
+  load_balancers            = ["${aws_elb.my-aws-elb.name}"]
+  health_check_type         = "ELB"
+  
   tag {
     key = "Name"
-    value = "terraform-asg-example"
+    value = "terraform-asg-sbk"
     propagate_at_launch = true
   }
 }
