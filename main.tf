@@ -66,7 +66,7 @@ resource "aws_route_table_association" "public-assoc-1" {
 
 ##  creating security groups
 resource "aws_security_group" "webservers" {
-  name        = "allow_http"
+  name        = "sbksg"
   description = "Allow http inbound traffic"
   vpc_id      = "${aws_vpc.terra_vpc.id}"
 
