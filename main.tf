@@ -101,7 +101,7 @@ resource "aws_instance" "base"{
   # security_groups        = ["${aws_security_group.webservers.id}"]
   vpc_security_group_ids = ["${aws_security_group.webservers.id}"]
   subnet_id              = aws_subnet.subnet1[count.index].id
-  user_data              = "${file("install_httpd.sh")}"
+  user_data              = "${file("user_data.sh")}"
   tags ={
     Name = "sbktest${count.index}"
   }
@@ -167,7 +167,7 @@ resource "aws_launch_configuration" "sbk" {
   instance_type          = var.instance_type
   security_groups        = ["${aws_security_group.webservers.id}"]
   key_name               = var.key_name
-  user_data              = "${file("install_httpd.sh")}"
+  user_data              = "${file("user_data.sh")}"
 }
 
 ## Creating AutoScaling Group
