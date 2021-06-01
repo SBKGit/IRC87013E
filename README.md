@@ -10,7 +10,6 @@ This folder contains example Terraform configuration that define a module for de
 
   - terraform init 
   - terraform plan 
-  - terraform fmt sbktfexercise.tf 
   - terraform apply 
   - terraform destroy
 
