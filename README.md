@@ -14,4 +14,6 @@ This folder contains example Terraform configuration that define a module for de
   - terraform apply 
   - terraform destroy
 
+**Architecture diagram**
+
 <img width="477" alt="Screenshot 2021-06-01 at 16 39 07" src="https://user-images.githubusercontent.com/52453070/120351713-01095980-c2f8-11eb-8087-de1c0ca1f1f5.png">
