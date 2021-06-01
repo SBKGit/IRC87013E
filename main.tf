@@ -172,6 +172,15 @@ resource "aws_elb" "my-aws-elb" {
 #   target_id = aws_instance.base[count.index].id
 # }
 
+ resource "aws_default_subnet" "defaultsub" {
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "Default subnet"
+  }
+}
+
+
 ## Creating Launch Configuration
 resource "aws_launch_configuration" "example" {
   image_id               = var.ami_version
