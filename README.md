@@ -6,7 +6,7 @@ This folder contains example Terraform configuration that define a module for de
   - AWS Account creds
   - Terrform
 
-**Commands Used in this video:**
+**Commands to be used**
 
   - terraform init 
   - terraform plan 
