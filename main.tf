@@ -1,3 +1,18 @@
+## creating instances
+resource "aws_instance" "base"{
+  ami                    = var.ami_version
+  instance_type          = var.instance_type
+  count                  = var.no-of-instances
+  key_name               = var.key_name
+  # security_groups        = ["${aws_security_group.webservers.id}"]
+  vpc_security_group_ids = ["${aws_security_group.webservers.id}"]
+  subnet_id              = aws_subnet.subnet1[count.index].id
+  user_data              = "${file("user_data.sh")}"
+  tags ={
+    Name = "sbktest${count.index}"
+  }
+}
+
 ## creating VPC
 resource "aws_vpc" "terra_vpc" {
   cidr_block       = "${var.vpc_cidr}"
