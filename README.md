@@ -4,7 +4,7 @@ This folder contains example Terraform configuration that define a module for de
 **Pre-requiste**
 
   - AWS Account creds
-  - Terrform
+  - Terrform for IAC
 
 **Commands to be used**
 
